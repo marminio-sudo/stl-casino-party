@@ -170,7 +170,7 @@ export default function CheckIn() {
   return (
     <div style={styles.app}>
       <div style={styles.header}>
-        <div style={styles.logo}>St. Louis Casino Party</div>
+        <img src="/logo.png" alt="St. Louis Casino Party" style={{height:52,width:'auto'}} />
         <div style={styles.eventLabel}>{event?.name ?? '...'}</div>
       </div>
 
