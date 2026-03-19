@@ -274,7 +274,7 @@ export default function CheckIn() {
           <button style={styles.btnPrimary} onClick={handleDealerConfirm}>
             Confirm Buy-In / Chips Issued
           </button>
-          <p style={styles.privacy} style={{textAlign:'center',marginTop:12}}>
+          <p style={{...styles.privacy, textAlign:'center', marginTop:12}}>
             This logs the transaction and confirms the guest's wallet.
           </p>
           <button style={styles.btnGhost} onClick={() => setScreen(SCREEN.WALLET)}>← Back</button>
