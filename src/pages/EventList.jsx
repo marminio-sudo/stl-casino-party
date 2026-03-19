@@ -1,12 +1,10 @@
 // src/pages/EventList.jsx
-// Admin home screen — create events, generate QR codes, jump to dashboards
-
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import QRCode from 'https://esm.sh/qrcode@1.5.3'
+import QRCode from 'qrcode'
 
-const ADMIN_PIN = '1234' // Change this to match Admin.jsx
+const ADMIN_PIN = '1234'
 
 export default function EventList() {
   const navigate = useNavigate()
@@ -39,9 +37,8 @@ export default function EventList() {
   async function showQR(eventId) {
     const url = `${window.location.origin}/event/${eventId}`
     setQrEventId(eventId)
-    const canvas = document.createElement('canvas')
-    await QRCode.toCanvas(canvas, url, { width: 240, margin: 2 })
-    setQrCanvas(canvas.toDataURL())
+    const dataUrl = await QRCode.toDataURL(url, { width: 240, margin: 2 })
+    setQrCanvas(dataUrl)
   }
 
   async function toggleActive(id, current) {
@@ -51,7 +48,9 @@ export default function EventList() {
 
   if (!authed) return (
     <div style={s.app}>
-      <div style={s.header}><div style={s.logo}>St. Louis Casino Party</div></div>
+      <div style={s.header}>
+        <img src="/logo.png" alt="St. Louis Casino Party" style={{height:40, width:'auto'}} />
+      </div>
       <div style={{...s.body, alignItems:'center', justifyContent:'center'}}>
         <div style={s.h1}>Admin Login</div>
         <input style={{...s.input, textAlign:'center', letterSpacing:8, fontSize:20, maxWidth:200, marginTop:16}}
@@ -66,12 +65,11 @@ export default function EventList() {
   return (
     <div style={s.app}>
       <div style={s.header}>
-       <img src="/logo.png" alt="St. Louis Casino Party" style={{height:40,width:'auto'}} />
+        <img src="/logo.png" alt="St. Louis Casino Party" style={{height:40, width:'auto'}} />
         <button style={s.btnSecondary} onClick={() => setCreating(true)}>+ New Event</button>
       </div>
 
       <div style={s.body}>
-        {/* Create event form */}
         {creating && (
           <div style={s.card}>
             <div style={s.cardTitle}>New Event</div>
@@ -104,7 +102,6 @@ export default function EventList() {
           </div>
         )}
 
-        {/* QR modal */}
         {qrCanvas && (
           <div style={s.card}>
             <div style={s.cardTitle}>QR Code</div>
@@ -115,7 +112,8 @@ export default function EventList() {
               </div>
             </div>
             <div style={{display:'flex', gap:10}}>
-              <a href={qrCanvas} download="casino-checkin-qr.png" style={{...s.btnPrimary, textAlign:'center', textDecoration:'none', display:'block', flex:1}}>
+              <a href={qrCanvas} download="casino-checkin-qr.png"
+                style={{...s.btnPrimary, textAlign:'center', textDecoration:'none', display:'block', flex:1}}>
                 Download PNG
               </a>
               <button style={s.btnGhost} onClick={() => { setQrCanvas(null); setQrEventId(null) }}>Close</button>
@@ -123,7 +121,6 @@ export default function EventList() {
           </div>
         )}
 
-        {/* Events list */}
         <div style={s.lbl}>Your Events</div>
         {events.length === 0 && <p style={s.muted}>No events yet. Create one above.</p>}
         {events.map(ev => (
@@ -152,23 +149,22 @@ export default function EventList() {
 }
 
 const s = {
-  app:        { minHeight:'100vh', background:'#0d1a0d', fontFamily:"'DM Sans',sans-serif", color:'#fff' },
-  header:     { background:'#0a130a', borderBottom:'0.5px solid rgba(201,168,76,0.2)', padding:'16px 20px', display:'flex', justifyContent:'space-between', alignItems:'center' },
-  logo:       { fontFamily:"'Playfair Display',serif", fontSize:18, color:'#c9a84c' },
-  body:       { padding:20, display:'flex', flexDirection:'column', gap:4 },
-  h1:         { fontFamily:"'Playfair Display',serif", fontSize:24, color:'#fff' },
-  card:       { background:'rgba(255,255,255,0.04)', border:'0.5px solid rgba(201,168,76,0.2)', borderRadius:12, padding:18, marginBottom:16 },
-  cardTitle:  { fontFamily:"'Playfair Display',serif", fontSize:18, color:'#fff', marginBottom:16 },
-  lbl:        { fontSize:11, letterSpacing:2, textTransform:'uppercase', color:'rgba(201,168,76,0.6)', marginTop:12, marginBottom:6, display:'block' },
-  input:      { width:'100%', background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.15)', borderRadius:8, padding:'11px 14px', fontSize:14, color:'#fff', outline:'none', fontFamily:'inherit', marginBottom:4 },
-  checkRow:   { display:'flex', alignItems:'center', gap:10, padding:'8px 0' },
-  checkLabel: { fontSize:14, color:'rgba(255,255,255,0.7)' },
-  btnPrimary: { flex:1, background:'linear-gradient(135deg,#c9a84c,#a8832a)', border:'none', borderRadius:8, padding:'12px 16px', fontSize:14, fontWeight:500, color:'#1a0a00', cursor:'pointer', fontFamily:'inherit' },
+  app:         { minHeight:'100vh', background:'#0d1a0d', fontFamily:"'DM Sans',sans-serif", color:'#fff' },
+  header:      { background:'#0a130a', borderBottom:'0.5px solid rgba(201,168,76,0.2)', padding:'16px 20px', display:'flex', justifyContent:'space-between', alignItems:'center' },
+  body:        { padding:20, display:'flex', flexDirection:'column', gap:4 },
+  h1:          { fontFamily:"'Playfair Display',serif", fontSize:24, color:'#fff' },
+  card:        { background:'rgba(255,255,255,0.04)', border:'0.5px solid rgba(201,168,76,0.2)', borderRadius:12, padding:18, marginBottom:16 },
+  cardTitle:   { fontFamily:"'Playfair Display',serif", fontSize:18, color:'#fff', marginBottom:16 },
+  lbl:         { fontSize:11, letterSpacing:2, textTransform:'uppercase', color:'rgba(201,168,76,0.6)', marginTop:12, marginBottom:6, display:'block' },
+  input:       { width:'100%', background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.15)', borderRadius:8, padding:'11px 14px', fontSize:14, color:'#fff', outline:'none', fontFamily:'inherit', marginBottom:4 },
+  checkRow:    { display:'flex', alignItems:'center', gap:10, padding:'8px 0' },
+  checkLabel:  { fontSize:14, color:'rgba(255,255,255,0.7)' },
+  btnPrimary:  { flex:1, background:'linear-gradient(135deg,#c9a84c,#a8832a)', border:'none', borderRadius:8, padding:'12px 16px', fontSize:14, fontWeight:500, color:'#1a0a00', cursor:'pointer', fontFamily:'inherit' },
   btnSecondary:{ background:'rgba(201,168,76,0.1)', border:'0.5px solid rgba(201,168,76,0.35)', borderRadius:8, padding:'9px 16px', fontSize:13, fontWeight:500, color:'#c9a84c', cursor:'pointer', fontFamily:'inherit' },
-  btnGhost:   { background:'none', border:'none', color:'rgba(255,255,255,0.35)', fontSize:13, cursor:'pointer', fontFamily:'inherit' },
-  btnSmall:   { background:'rgba(255,255,255,0.07)', border:'0.5px solid rgba(255,255,255,0.12)', borderRadius:6, padding:'5px 12px', fontSize:12, color:'rgba(255,255,255,0.7)', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' },
-  muted:      { fontSize:13, color:'rgba(255,255,255,0.35)', marginTop:8 },
-  eventRow:   { display:'flex', alignItems:'flex-start', padding:'14px 0', borderBottom:'0.5px solid rgba(255,255,255,0.06)', gap:12 },
-  eventName:  { fontSize:15, color:'#fff', marginBottom:4 },
-  eventMeta:  { fontSize:12, color:'rgba(255,255,255,0.35)' },
+  btnGhost:    { background:'none', border:'none', color:'rgba(255,255,255,0.35)', fontSize:13, cursor:'pointer', fontFamily:'inherit' },
+  btnSmall:    { background:'rgba(255,255,255,0.07)', border:'0.5px solid rgba(255,255,255,0.12)', borderRadius:6, padding:'5px 12px', fontSize:12, color:'rgba(255,255,255,0.7)', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' },
+  muted:       { fontSize:13, color:'rgba(255,255,255,0.35)', marginTop:8 },
+  eventRow:    { display:'flex', alignItems:'flex-start', padding:'14px 0', borderBottom:'0.5px solid rgba(255,255,255,0.06)', gap:12 },
+  eventName:   { fontSize:15, color:'#fff', marginBottom:4 },
+  eventMeta:   { fontSize:12, color:'rgba(255,255,255,0.35)' },
 }
