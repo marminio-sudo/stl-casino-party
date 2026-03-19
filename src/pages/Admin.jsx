@@ -164,7 +164,7 @@ export default function Admin() {
   return (
     <div style={s.app}>
       <div style={s.header}>
-        <div><div style={s.logo}>St. Louis Casino Party</div><div style={s.role}>Manager View</div></div>
+        <img src="/logo.png" alt="St. Louis Casino Party" style={{height:40,width:'auto'}} /></div>
         <div style={{textAlign:'right'}}><div style={{fontSize:13,color:'rgba(255,255,255,0.6)'}}>{event?.name}</div></div>
       </div>
 
