@@ -66,7 +66,7 @@ export default function EventList() {
   return (
     <div style={s.app}>
       <div style={s.header}>
-        <div style={s.logo}>St. Louis Casino Party</div>
+       <img src="/logo.png" alt="St. Louis Casino Party" style={{height:40,width:'auto'}} />
         <button style={s.btnSecondary} onClick={() => setCreating(true)}>+ New Event</button>
       </div>
 
