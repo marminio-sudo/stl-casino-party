@@ -23,6 +23,7 @@ export default function Admin() {
   const [drawing, setDrawing] = useState(false)
   const [drawLog, setDrawLog] = useState([])
   const [saving, setSaving]   = useState(false)
+  const [sending, setSending] = useState(false)
 
   // ── Auth ───────────────────────────────────────────────
   function checkPin() {
@@ -101,6 +102,34 @@ export default function Admin() {
   async function removePrize(id) {
     await supabase.from('prizes').delete().eq('id', id)
     loadPrizes()
+  }
+
+  // ── Send SMS to winner ─────────────────────────────────
+  async function sendWinnerSMS(prizeId) {
+    const prize = prizes.find(p => p.id === prizeId)
+    if (!prize || !prize.winner_guest_id) return
+
+    const winner = guests.find(g => g.id === prize.winner_guest_id)
+    if (!winner || !winner.phone) {
+      alert('Winner has no phone number on file')
+      return
+    }
+
+    setSending(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('send-sms', {
+        body: {
+          to: winner.phone,
+          message: `🎉 Congratulations ${winner.name}! You won: ${prize.name} at ${event.name}! Please see the event host to claim your prize.`
+        }
+      })
+
+      if (error) throw error
+      alert(`SMS sent to ${winner.name}!`)
+    } catch (err) {
+      alert(`Failed to send SMS: ${err.message}`)
+    }
+    setSending(false)
   }
 
   // ── Draw winner ────────────────────────────────────────
@@ -238,13 +267,20 @@ export default function Admin() {
                 {p.drawn_at && <div style={s.prizeWinner}>Winner: {guests.find(g=>g.id===p.winner_guest_id)?.name || '—'}</div>}
               </div>
               {!p.drawn_at ? (
-                <button style={s.btnDraw} onClick={() => drawWinner(p.id)} disabled={drawing}>
-                  {drawing ? 'Drawing...' : 'Draw'}
-                </button>
+                <>
+                  <button style={s.btnDraw} onClick={() => drawWinner(p.id)} disabled={drawing}>
+                    {drawing ? 'Drawing...' : 'Draw'}
+                  </button>
+                  <button style={s.btnDel} onClick={() => removePrize(p.id)}>×</button>
+                </>
               ) : (
-                <span style={{fontSize:12,color:'rgba(76,175,80,0.8)'}}>Drawn ✓</span>
+                <>
+                  <button style={s.btnDraw} onClick={() => sendWinnerSMS(p.id)} disabled={sending}>
+                    {sending ? 'Sending...' : '📱 Text Winner'}
+                  </button>
+                  <span style={{fontSize:12,color:'rgba(76,175,80,0.8)',marginLeft:8}}>✓</span>
+                </>
               )}
-              {!p.drawn_at && <button style={s.btnDel} onClick={() => removePrize(p.id)}>×</button>}
             </div>
           ))}
           <div style={{display:'flex',gap:8,marginTop:8}}>
