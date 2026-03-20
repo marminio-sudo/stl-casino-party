@@ -30,6 +30,7 @@ export default function CheckIn() {
   const [event, setEvent]     = useState(null)
   const [guest, setGuest]     = useState(null)  // saved DB row
   const [name, setName]       = useState('')
+  const [phone, setPhone]     = useState('')
   const [error, setError]     = useState('')
   const [selected, setSelected] = useState(null)
   const [tallyVal, setTallyVal] = useState('')
@@ -76,8 +77,8 @@ export default function CheckIn() {
   // ── Check in ───────────────────────────────────────────
   async function handleCheckIn() {
     setError('')
-    if (!name.trim()) {
-      setError('Please enter your name.')
+    if (!name.trim() || !phone.trim()) {
+      setError('Please enter your name and phone number.')
       return
     }
     const { data, error: err } = await supabase
@@ -85,7 +86,7 @@ export default function CheckIn() {
       .insert({
         event_id:       eventId,
         name:           name.trim(),
-        phone:          '', // Optional now
+        phone:          phone.trim(),
         starting_chips: event.starting_chips,
         dealer_confirmed: true, // Auto-confirm
         confirmed_at: new Date().toISOString(),
@@ -191,18 +192,22 @@ export default function CheckIn() {
       {screen === SCREEN.FORM && (
         <div style={styles.body}>
           <h1 style={styles.h1}>Welcome!<br/>Get your chips.</h1>
-          <p style={styles.sub}>Enter your name to receive {event?.starting_chips?.toLocaleString()} starting chips instantly.</p>
+          <p style={styles.sub}>Enter your info to receive {event?.starting_chips?.toLocaleString()} starting chips instantly.</p>
 
           <label style={styles.fieldLabel}>Your name</label>
           <input style={styles.input} value={name} onChange={e => setName(e.target.value)}
             placeholder="First & last name" type="text" autoComplete="off" />
+
+          <label style={styles.fieldLabel}>Mobile number</label>
+          <input style={styles.input} value={phone} onChange={e => setPhone(e.target.value)}
+            placeholder="(314) 555-0000" type="tel" autoComplete="off" />
 
           {error && <p style={styles.errorText}>{error}</p>}
 
           <button style={styles.btnPrimary} onClick={handleCheckIn}>
             Get My Chips →
           </button>
-          <p style={styles.privacy}>Ready to play immediately. No signup required.</p>
+          <p style={styles.privacy}>We'll text you if you win a raffle prize. Ready to play immediately!</p>
         </div>
       )}
 
