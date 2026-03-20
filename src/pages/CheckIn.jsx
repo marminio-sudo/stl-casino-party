@@ -189,8 +189,8 @@ export default function CheckIn() {
       {/* ── Check-in Form ── */}
       {screen === SCREEN.FORM && (
         <div style={styles.body}>
-          <h1 style={styles.h1}>Welcome!<br/>Let's get you checked in.</h1>
-          <p style={styles.sub}>Enter your info to receive your starting chips. No account needed.</p>
+          <h1 style={styles.h1}>Welcome!<br/>Get your chips.</h1>
+          <p style={styles.sub}>Enter your info to receive {event?.starting_chips?.toLocaleString()} starting chips instantly.</p>
 
           <label style={styles.fieldLabel}>Your name</label>
           <input style={styles.input} value={name} onChange={e => setName(e.target.value)}
@@ -205,7 +205,7 @@ export default function CheckIn() {
           <button style={styles.btnPrimary} onClick={handleCheckIn}>
             Get My Chips →
           </button>
-          <p style={styles.privacy}>Your info is used for this event only and not stored long-term.</p>
+          <p style={styles.privacy}>We'll text you if you win a raffle prize. Ready to play immediately!</p>
         </div>
       )}
 
@@ -222,7 +222,7 @@ export default function CheckIn() {
             <div style={styles.statusRow}>
               <div style={{...styles.statusDot, background: guest.dealer_confirmed ? '#4caf50' : '#f0a500'}} />
               <span style={styles.statusText}>
-                {guest.dealer_confirmed ? 'Confirmed by dealer' : 'Awaiting dealer confirmation'}
+                {guest.dealer_confirmed ? 'Confirmed by dealer - ready to play!' : 'Awaiting dealer confirmation'}
               </span>
             </div>
           </div>
@@ -243,16 +243,18 @@ export default function CheckIn() {
           </div>
 
           <div style={styles.actionArea}>
-            {event.is_fundraiser && (
+            {!guest.tally_submitted && guest.dealer_confirmed && (
+              <button style={styles.btnPrimary} onClick={() => setScreen(SCREEN.TALLY)}>
+                💰 Cash Out
+              </button>
+            )}
+            {event.is_fundraiser && guest.dealer_confirmed && (
               <button style={styles.btnSecondary} onClick={() => setScreen(SCREEN.BUYIN)}>
                 + Buy More Chips
               </button>
             )}
             <button style={styles.btnGhost} onClick={() => setScreen(SCREEN.DEALER)}>
               Dealer confirmation view →
-            </button>
-            <button style={styles.btnGhost} onClick={() => setScreen(SCREEN.TALLY)}>
-              End of night tally →
             </button>
           </div>
         </div>
@@ -304,22 +306,22 @@ export default function CheckIn() {
         </div>
       )}
 
-      {/* ── End of Night Tally ── */}
+      {/* ── Cash Out ── */}
       {screen === SCREEN.TALLY && (
         <div style={styles.body}>
-          <h2 style={styles.h2}>End of Night</h2>
-          <p style={styles.sub}>Dealer enters this guest's final chip count.</p>
-          <label style={styles.fieldLabel}>Final chip count</label>
+          <h2 style={styles.h2}>💰 Cash Out</h2>
+          <p style={styles.sub}>Done playing? Count your chips and cash out anytime.</p>
+          <label style={styles.fieldLabel}>Your final chip count</label>
           <input style={styles.input} type="number" placeholder="e.g. 12500"
-            value={tallyVal} onChange={e => setTallyVal(e.target.value)} />
+            value={tallyVal} onChange={e => setTallyVal(e.target.value)} autoFocus />
           {tallyVal && !isNaN(parseInt(tallyVal)) && (
             <div style={styles.tallyCard}>
-              <div style={styles.chipLabel}>Total chips</div>
+              <div style={styles.chipLabel}>Final chip count</div>
               <div style={styles.chipAmount}>{parseInt(tallyVal).toLocaleString()}</div>
               {event.raffle_enabled && (
                 <div style={styles.ticketLine}>
-                  Converts to <strong>{ticketCount.toLocaleString()}</strong> raffle tickets
-                  <br/><span style={{fontSize:11,opacity:0.5}}>(1 ticket per {event.chips_per_ticket} chips, rounded up)</span>
+                  = <strong>{ticketCount.toLocaleString()}</strong> raffle tickets
+                  <br/><span style={{fontSize:11,opacity:0.5}}>({event.chips_per_ticket} chips = 1 ticket)</span>
                 </div>
               )}
             </div>
@@ -328,25 +330,27 @@ export default function CheckIn() {
             style={{...styles.btnPrimary, opacity: tallyVal ? 1 : 0.4}}
             disabled={!tallyVal}
             onClick={handleTally}>
-            Submit Final Count
+            Cash Out →
           </button>
-          <button style={styles.btnGhost} onClick={() => setScreen(SCREEN.WALLET)}>← Back</button>
+          <button style={styles.btnGhost} onClick={() => setScreen(SCREEN.WALLET)}>← Cancel</button>
         </div>
       )}
 
       {/* ── Done ── */}
       {screen === SCREEN.DONE && (
         <div style={{...styles.body, alignItems:'center', textAlign:'center', justifyContent:'center'}}>
-          <div style={{fontSize:60, marginBottom:16}}>🎲</div>
-          <h2 style={styles.h2}>All set!</h2>
-          <p style={styles.sub}>Your final count has been submitted. Thanks for playing — good luck in the raffle!</p>
+          <div style={{fontSize:60, marginBottom:16}}>✅</div>
+          <h2 style={styles.h2}>Cashed Out!</h2>
+          <p style={styles.sub}>Thanks for playing! {event.raffle_enabled ? 'Good luck in the raffle!' : 'See you next time!'}</p>
           {guest?.final_chips && (
             <div style={styles.tallyCard}>
               <div style={styles.chipLabel}>Final chips</div>
               <div style={styles.chipAmount}>{guest.final_chips.toLocaleString()}</div>
-              <div style={styles.ticketLine}>
-                = {Math.ceil(guest.final_chips / event.chips_per_ticket)} raffle tickets
-              </div>
+              {event.raffle_enabled && (
+                <div style={styles.ticketLine}>
+                  = {Math.ceil(guest.final_chips / event.chips_per_ticket)} raffle tickets
+                </div>
+              )}
             </div>
           )}
         </div>
