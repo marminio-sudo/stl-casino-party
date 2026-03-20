@@ -9,7 +9,7 @@ const ADMIN_PIN = '1234'
 export default function EventList() {
   const navigate = useNavigate()
   const [pin, setPin]       = useState('')
-  const [authed, setAuthed] = useState(false)
+  const [authed, setAuthed] = useState(localStorage.getItem('admin_authed') === 'true')
   const [events, setEvents] = useState([])
   const [creating, setCreating] = useState(false)
   const [view, setView] = useState('active') // 'active' | 'archived'
@@ -17,7 +17,14 @@ export default function EventList() {
   const [qrCanvas, setQrCanvas] = useState(null)
   const [qrEventId, setQrEventId] = useState(null)
 
-  function checkPin() { if (pin === ADMIN_PIN) setAuthed(true); else setPin('') }
+  function checkPin() { 
+    if (pin === ADMIN_PIN) {
+      setAuthed(true)
+      localStorage.setItem('admin_authed', 'true')
+    } else {
+      setPin('')
+    }
+  }
 
   useEffect(() => { if (authed) loadEvents() }, [authed])
 

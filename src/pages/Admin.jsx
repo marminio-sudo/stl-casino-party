@@ -13,7 +13,7 @@ export default function Admin() {
   const { eventId } = useParams()
   const navigate = useNavigate()
   const [pin, setPin]         = useState('')
-  const [authed, setAuthed]   = useState(false)
+  const [authed, setAuthed]   = useState(localStorage.getItem('admin_authed') === 'true')
   const [tab, setTab]         = useState('guests')
   const [event, setEvent]     = useState(null)
   const [guests, setGuests]   = useState([])
@@ -26,8 +26,12 @@ export default function Admin() {
 
   // ── Auth ───────────────────────────────────────────────
   function checkPin() {
-    if (pin === ADMIN_PIN) setAuthed(true)
-    else setPin('')
+    if (pin === ADMIN_PIN) {
+      setAuthed(true)
+      localStorage.setItem('admin_authed', 'true')
+    } else {
+      setPin('')
+    }
   }
 
   // ── Load everything ────────────────────────────────────
