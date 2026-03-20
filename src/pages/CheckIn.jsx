@@ -88,8 +88,6 @@ export default function CheckIn() {
         name:           name.trim(),
         phone:          phone.trim(),
         starting_chips: event.starting_chips,
-        dealer_confirmed: true, // Auto-confirm
-        confirmed_at: new Date().toISOString(),
       })
       .select()
       .single()
@@ -222,8 +220,10 @@ export default function CheckIn() {
             <div style={styles.chipAmount}>{totalChips.toLocaleString()}</div>
             <div style={styles.chipUnit}>chips</div>
             <div style={styles.statusRow}>
-              <div style={{...styles.statusDot, background: '#4caf50'}} />
-              <span style={styles.statusText}>Ready to play</span>
+              <div style={{...styles.statusDot, background: guest.dealer_confirmed ? '#4caf50' : '#f0a500'}} />
+              <span style={styles.statusText}>
+                {guest.dealer_confirmed ? 'Confirmed by dealer - ready to play!' : 'Awaiting dealer confirmation'}
+              </span>
             </div>
           </div>
 
@@ -243,18 +243,18 @@ export default function CheckIn() {
           </div>
 
           <div style={styles.actionArea}>
-            {!guest.tally_submitted && (
+            {!guest.tally_submitted && guest.dealer_confirmed && (
               <button style={styles.btnPrimary} onClick={() => setScreen(SCREEN.TALLY)}>
                 💰 Cash Out
               </button>
             )}
-            {event.is_fundraiser && (
+            {event.is_fundraiser && guest.dealer_confirmed && (
               <button style={styles.btnSecondary} onClick={() => setScreen(SCREEN.BUYIN)}>
                 + Buy More Chips
               </button>
             )}
             <button style={styles.btnGhost} onClick={() => setScreen(SCREEN.DEALER)}>
-              Dealer view →
+              Dealer confirmation view →
             </button>
           </div>
         </div>
