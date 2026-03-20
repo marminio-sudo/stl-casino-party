@@ -4,13 +4,14 @@
 // Protected by a simple PIN (replace with proper auth later)
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const ADMIN_PIN = '1234' // Change this! Or wire up Supabase Auth later.
 
 export default function Admin() {
   const { eventId } = useParams()
+  const navigate = useNavigate()
   const [pin, setPin]         = useState('')
   const [authed, setAuthed]   = useState(false)
   const [tab, setTab]         = useState('guests')
@@ -146,7 +147,9 @@ export default function Admin() {
   // ══════════════════════════════════════════════════════
   if (!authed) return (
     <div style={s.app}>
-      <div style={s.header}><div style={s.logo}>St. Louis Casino Party</div><div style={s.role}>Admin</div></div>
+      <div style={s.header}>
+        <img src="/logo.png" alt="St. Louis Casino Party" style={{height:120,width:'auto'}} />
+      </div>
       <div style={{...s.body, alignItems:'center', justifyContent:'center', gap:12}}>
         <div style={{fontFamily:"'Playfair Display',serif", fontSize:22, color:'#fff', marginBottom:8}}>Manager Access</div>
         <input style={{...s.input, textAlign:'center', letterSpacing:8, fontSize:20, maxWidth:200}}
@@ -164,8 +167,13 @@ export default function Admin() {
   return (
     <div style={s.app}>
       <div style={s.header}>
-        <img src="/logo.png" alt="St. Louis Casino Party" style={{height:40,width:'auto'}} />
-        <div style={{textAlign:'right'}}><div style={{fontSize:13,color:'rgba(255,255,255,0.6)'}}>{event?.name}</div></div>
+        <img src="/logo.png" alt="St. Louis Casino Party" 
+          style={{height:120,width:'auto',cursor:'pointer'}} 
+          onClick={() => navigate('/admin')} />
+        <div style={{textAlign:'right'}}>
+          <div style={{fontSize:15,color:'#fff',marginBottom:4}}>{event?.name}</div>
+          <div style={{fontSize:12,color:'rgba(255,255,255,0.4)',cursor:'pointer'}} onClick={() => navigate('/admin')}>← Back to events</div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -323,11 +331,11 @@ function Toggle({ label, value, onChange }) {
 
 // ─── Styles ──────────────────────────────────────────────
 const s = {
-  app:         { minHeight:'100vh', background:'#0d1a0d', fontFamily:"'DM Sans',sans-serif", color:'#fff' },
-  header:      { background:'#0a130a', borderBottom:'0.5px solid rgba(201,168,76,0.2)', padding:'14px 20px', display:'flex', justifyContent:'space-between', alignItems:'center' },
+  app:         { minHeight:'100vh', background:'#1a1a1a', fontFamily:"'DM Sans',sans-serif", color:'#fff' },
+  header:      { background:'#000', borderBottom:'0.5px solid rgba(201,168,76,0.2)', padding:'24px 32px', display:'flex', justifyContent:'space-between', alignItems:'center' },
   logo:        { fontFamily:"'Playfair Display',serif", fontSize:17, color:'#c9a84c' },
   role:        { fontSize:11, letterSpacing:2, textTransform:'uppercase', color:'rgba(255,255,255,0.3)', marginTop:2 },
-  tabs:        { display:'flex', borderBottom:'0.5px solid rgba(255,255,255,0.08)', background:'#0a130a' },
+  tabs:        { display:'flex', borderBottom:'0.5px solid rgba(255,255,255,0.08)', background:'#000' },
   tab:         { padding:'12px 18px', fontSize:13, color:'rgba(255,255,255,0.4)', cursor:'pointer', borderBottom:'2px solid transparent' },
   tabActive:   { color:'#c9a84c', borderBottomColor:'#c9a84c' },
   body:        { padding:20, display:'flex', flexDirection:'column', gap:0 },
