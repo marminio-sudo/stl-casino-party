@@ -13,7 +13,7 @@ export default function EventList() {
   const [events, setEvents] = useState([])
   const [creating, setCreating] = useState(false)
   const [view, setView] = useState('active') // 'active' | 'archived'
-  const [form, setForm]     = useState({ name:'', event_date:'', starting_chips:5000, chips_per_ticket:250, is_fundraiser:false, raffle_enabled:true })
+  const [form, setForm]     = useState({ name:'', event_date:'', starting_chips:1000, chips_per_ticket:250, is_fundraiser:false, raffle_enabled:true })
   const [qrCanvas, setQrCanvas] = useState(null)
   const [qrEventId, setQrEventId] = useState(null)
 
@@ -32,7 +32,7 @@ export default function EventList() {
     if (data) {
       setEvents(prev => [data, ...prev])
       setCreating(false)
-      setForm({ name:'', event_date:'', starting_chips:5000, chips_per_ticket:250, is_fundraiser:false, raffle_enabled:true })
+      setForm({ name:'', event_date:'', starting_chips:1000, chips_per_ticket:250, is_fundraiser:false, raffle_enabled:true })
     }
   }
 
