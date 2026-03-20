@@ -12,6 +12,7 @@ export default function EventList() {
   const [authed, setAuthed] = useState(false)
   const [events, setEvents] = useState([])
   const [creating, setCreating] = useState(false)
+  const [view, setView] = useState('active') // 'active' | 'archived'
   const [form, setForm]     = useState({ name:'', event_date:'', starting_chips:5000, chips_per_ticket:250, is_fundraiser:false, raffle_enabled:true })
   const [qrCanvas, setQrCanvas] = useState(null)
   const [qrEventId, setQrEventId] = useState(null)
@@ -26,6 +27,7 @@ export default function EventList() {
   }
 
   async function createEvent() {
+    if (!form.name) return
     const { data } = await supabase.from('events').insert(form).select().single()
     if (data) {
       setEvents(prev => [data, ...prev])
@@ -46,10 +48,23 @@ export default function EventList() {
     loadEvents()
   }
 
+  async function archiveEvent(id) {
+    await supabase.from('events').update({ is_active: false, is_archived: true }).eq('id', id)
+    loadEvents()
+  }
+
+  async function deleteEvent(id) {
+    if (!window.confirm('Delete this event and all its guest data? This cannot be undone.')) return
+    await supabase.from('events').delete().eq('id', id)
+    loadEvents()
+  }
+
+  const filtered = events.filter(ev => view === 'archived' ? ev.is_archived : !ev.is_archived)
+
   if (!authed) return (
     <div style={s.app}>
       <div style={s.header}>
-        <img src="/logo.png" alt="St. Louis Casino Party" style={{height:40, width:'auto'}} />
+        <img src="/logo.png" alt="St. Louis Casino Party" style={{height:120, width:'auto'}} />
       </div>
       <div style={{...s.body, alignItems:'center', justifyContent:'center'}}>
         <div style={s.h1}>Admin Login</div>
@@ -65,7 +80,9 @@ export default function EventList() {
   return (
     <div style={s.app}>
       <div style={s.header}>
-        <img src="/logo.png" alt="St. Louis Casino Party" style={{height:40, width:'auto'}} />
+        <img src="/logo.png" alt="St. Louis Casino Party" 
+          style={{height:120, width:'auto', cursor:'pointer'}} 
+          onClick={() => navigate('/admin')} />
         <button style={s.btnSecondary} onClick={() => setCreating(true)}>+ New Event</button>
       </div>
 
@@ -121,9 +138,13 @@ export default function EventList() {
           </div>
         )}
 
-        <div style={s.lbl}>Your Events</div>
-        {events.length === 0 && <p style={s.muted}>No events yet. Create one above.</p>}
-        {events.map(ev => (
+        <div style={s.viewToggle}>
+          <div style={{...s.viewBtn, ...(view==='active' ? s.viewBtnActive : {})}} onClick={() => setView('active')}>Active</div>
+          <div style={{...s.viewBtn, ...(view==='archived' ? s.viewBtnActive : {})}} onClick={() => setView('archived')}>Archived</div>
+        </div>
+
+        {filtered.length === 0 && <p style={s.muted}>{view === 'archived' ? 'No archived events.' : 'No events yet. Create one above.'}</p>}
+        {filtered.map(ev => (
           <div key={ev.id} style={s.eventRow}>
             <div style={{flex:1}}>
               <div style={s.eventName}>{ev.name}</div>
@@ -131,15 +152,16 @@ export default function EventList() {
                 {ev.event_date || 'No date'} &bull; {ev.starting_chips.toLocaleString()} chips
                 {ev.is_fundraiser ? ' · Fundraiser' : ''}
                 {ev.raffle_enabled ? ' · Raffle' : ''}
+                {ev.is_archived ? ' · Archived' : ''}
               </div>
             </div>
             <div style={{display:'flex', flexDirection:'column', gap:6, alignItems:'flex-end'}}>
-              <button style={s.btnSmall} onClick={() => navigate(`/admin/${ev.id}`)}>Dashboard</button>
-              <button style={s.btnSmall} onClick={() => showQR(ev.id)}>QR Code</button>
-              <button style={{...s.btnSmall, color: ev.is_active ? 'rgba(240,100,100,0.8)' : 'rgba(76,175,80,0.8)'}}
-                onClick={() => toggleActive(ev.id, ev.is_active)}>
-                {ev.is_active ? 'Deactivate' : 'Activate'}
-              </button>
+              {!ev.is_archived && <button style={s.btnSmall} onClick={() => navigate(`/admin/${ev.id}`)}>Dashboard</button>}
+              {!ev.is_archived && <button style={s.btnSmall} onClick={() => showQR(ev.id)}>QR Code</button>}
+              {!ev.is_archived && (
+                <button style={s.btnSmall} onClick={() => archiveEvent(ev.id)}>Archive</button>
+              )}
+              <button style={{...s.btnSmall, color:'rgba(240,100,100,0.8)'}} onClick={() => deleteEvent(ev.id)}>Delete</button>
             </div>
           </div>
         ))}
@@ -149,9 +171,9 @@ export default function EventList() {
 }
 
 const s = {
-  app:         { minHeight:'100vh', background:'#0d1a0d', fontFamily:"'DM Sans',sans-serif", color:'#fff' },
-  header:      { background:'#0a130a', borderBottom:'0.5px solid rgba(201,168,76,0.2)', padding:'16px 20px', display:'flex', justifyContent:'space-between', alignItems:'center' },
-  body:        { padding:20, display:'flex', flexDirection:'column', gap:4 },
+  app:         { minHeight:'100vh', background:'#1a1a1a', fontFamily:"'DM Sans',sans-serif", color:'#fff' },
+  header:      { background:'#000', borderBottom:'0.5px solid rgba(201,168,76,0.2)', padding:'24px 32px', display:'flex', justifyContent:'space-between', alignItems:'center' },
+  body:        { padding:24, display:'flex', flexDirection:'column', gap:4 },
   h1:          { fontFamily:"'Playfair Display',serif", fontSize:24, color:'#fff' },
   card:        { background:'rgba(255,255,255,0.04)', border:'0.5px solid rgba(201,168,76,0.2)', borderRadius:12, padding:18, marginBottom:16 },
   cardTitle:   { fontFamily:"'Playfair Display',serif", fontSize:18, color:'#fff', marginBottom:16 },
@@ -167,4 +189,7 @@ const s = {
   eventRow:    { display:'flex', alignItems:'flex-start', padding:'14px 0', borderBottom:'0.5px solid rgba(255,255,255,0.06)', gap:12 },
   eventName:   { fontSize:15, color:'#fff', marginBottom:4 },
   eventMeta:   { fontSize:12, color:'rgba(255,255,255,0.35)' },
+  viewToggle:  { display:'flex', gap:8, margin:'8px 0 16px' },
+  viewBtn:     { padding:'7px 18px', borderRadius:8, fontSize:13, cursor:'pointer', border:'0.5px solid rgba(255,255,255,0.12)', color:'rgba(255,255,255,0.45)', background:'none' },
+  viewBtnActive:{ borderColor:'rgba(201,168,76,0.5)', color:'#c9a84c', background:'rgba(201,168,76,0.08)' },
 }
