@@ -56,7 +56,7 @@ export default function EventList() {
   }
 
   async function archiveEvent(id) {
-    await supabase.from('events').update({ is_active: false, is_archived: true }).eq('id', id)
+    await supabase.from('events').update({ is_active: false }).eq('id', id)
     loadEvents()
   }
 
@@ -66,7 +66,7 @@ export default function EventList() {
     loadEvents()
   }
 
-  const filtered = events.filter(ev => view === 'archived' ? ev.is_archived : !ev.is_archived)
+  const filtered = events.filter(ev => view === 'archived' ? !ev.is_active : ev.is_active)
 
   if (!authed) return (
     <div style={s.app}>
@@ -159,13 +159,13 @@ export default function EventList() {
                 {ev.event_date || 'No date'} &bull; {ev.starting_chips.toLocaleString()} chips
                 {ev.is_fundraiser ? ' · Fundraiser' : ''}
                 {ev.raffle_enabled ? ' · Raffle' : ''}
-                {ev.is_archived ? ' · Archived' : ''}
+                {!ev.is_active ? ' · Archived' : ''}
               </div>
             </div>
             <div style={{display:'flex', flexDirection:'column', gap:6, alignItems:'flex-end'}}>
-              {!ev.is_archived && <button style={s.btnSmall} onClick={() => navigate(`/admin/${ev.id}`)}>Dashboard</button>}
-              {!ev.is_archived && <button style={s.btnSmall} onClick={() => showQR(ev.id)}>QR Code</button>}
-              {!ev.is_archived && (
+              {ev.is_active && <button style={s.btnSmall} onClick={() => navigate(`/admin/${ev.id}`)}>Dashboard</button>}
+              {ev.is_active && <button style={s.btnSmall} onClick={() => showQR(ev.id)}>QR Code</button>}
+              {ev.is_active && (
                 <button style={s.btnSmall} onClick={() => archiveEvent(ev.id)}>Archive</button>
               )}
               <button style={{...s.btnSmall, color:'rgba(240,100,100,0.8)'}} onClick={() => deleteEvent(ev.id)}>Delete</button>
