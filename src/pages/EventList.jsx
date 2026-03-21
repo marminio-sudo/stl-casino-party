@@ -60,6 +60,11 @@ export default function EventList() {
     loadEvents()
   }
 
+  async function unarchiveEvent(id) {
+    await supabase.from('events').update({ is_active: true }).eq('id', id)
+    loadEvents()
+  }
+
   async function deleteEvent(id) {
     if (!window.confirm('Delete this event and all its guest data? This cannot be undone.')) return
     await supabase.from('events').delete().eq('id', id)
@@ -167,6 +172,9 @@ export default function EventList() {
               {ev.is_active && <button style={s.btnSmall} onClick={() => showQR(ev.id)}>QR Code</button>}
               {ev.is_active && (
                 <button style={s.btnSmall} onClick={() => archiveEvent(ev.id)}>Archive</button>
+              )}
+              {!ev.is_active && (
+                <button style={s.btnSmall} onClick={() => unarchiveEvent(ev.id)}>Unarchive</button>
               )}
               <button style={{...s.btnSmall, color:'rgba(240,100,100,0.8)'}} onClick={() => deleteEvent(ev.id)}>Delete</button>
             </div>
