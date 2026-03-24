@@ -15,6 +15,8 @@ create table events (
   raffle_enabled boolean not null default true,
   leaderboard_visible boolean not null default false,
   is_active     boolean not null default true,
+  gameplay_mode text default 'normal' check (gameplay_mode in ('tight', 'normal', 'loose')),
+  ticket_cap    integer,
   created_at    timestamptz default now()
 );
 
